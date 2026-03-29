@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: 'AI Resume Intelligence System',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="bg-gray-50">
+        <Header />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }

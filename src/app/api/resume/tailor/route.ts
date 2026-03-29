@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { tailorResume } from '@/lib/openai';
+import { tailorResume } from '@/lib/ai';
 
 export async function POST(request: Request) {
   try {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { detectWeaknesses } from '@/lib/openai';
+import { detectWeaknesses } from '@/lib/ai';
 
 export async function POST(request: Request) {
   try {
