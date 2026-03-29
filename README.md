@@ -1,6 +1,6 @@
 # AI Resume Intelligence System
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR_SITE_ID/deploy-status)](https://app.netlify.com/sites/YOUR_SITE_NAME/deploys)
+[![Vercel](https://vercel.com/button)](https://ai-resume-maker-sigma.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A production-ready Next.js application powered by Supabase and Google Gemini AI for intelligent resume creation, ATS analysis, job tailoring, and hiring simulation.
@@ -50,7 +50,7 @@ A production-ready Next.js application powered by Supabase and Google Gemini AI 
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_anon_key
    ```
 
 ## 🗄️ Database Setup
@@ -130,40 +130,46 @@ A production-ready Next.js application powered by Supabase and Google Gemini AI 
 
 3. Sign up for an account and start building your resume!
 
-## 🌐 Deployment to Netlify
+## 🌐 Deployment to Vercel
 
 ### Option 1: One-Click Deploy
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-username/ai-resume-maker)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/ai-resume-maker)
 
 ### Option 2: Manual Deployment
 
-1. **Connect your repository to Netlify**
-   - Go to [Netlify](https://netlify.com) and sign in
-   - Click "New site from Git"
-   - Connect your Git repository
+1. **Connect your repository to Vercel**
+   - Go to [Vercel](https://vercel.com) and sign in
+   - Click "New Project"
+   - Import your Git repository
 
-2. **Configure build settings**
-   - Build command: `npm run build`
-   - Publish directory: `.next`
-   - These are automatically configured via `netlify.toml`
+2. **Configure project settings**
+   - Framework Preset: Next.js (automatically detected)
+   - Root Directory: `./` (leave default)
+   - Build Command: `npm run build` (automatically configured)
+   - Output Directory: `.next` (automatically configured)
 
 3. **Set environment variables**
-   In your Netlify dashboard, go to Site settings > Environment variables and add:
+   In your Vercel dashboard, go to Project Settings > Environment Variables and add:
    - `GEMINI_API_KEY`
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 
 4. **Deploy**
-   - Click "Deploy site"
-   - Netlify will automatically build and deploy your application
+   - Click "Deploy"
+   - Vercel will automatically build and deploy your application
 
-### Important Notes for Netlify Deployment
+### Important Notes for Vercel Deployment
 
-- API routes are automatically converted to Netlify Functions
-- Static assets are served from the `.next` directory
-- Environment variables are securely managed in Netlify's dashboard
-- Update the Netlify badge in this README with your actual site ID
+- API routes are automatically converted to Vercel Serverless Functions
+- Static assets are optimized and served via Vercel's CDN
+- Environment variables are securely managed in Vercel's dashboard
+- Automatic HTTPS and global CDN distribution
+- Preview deployments for every git push
+- Serverless functions have extended timeout (30s) for AI processing
+- Deployed in US East region for optimal performance
+
+**Live Demo**: [https://ai-resume-maker-sigma.vercel.app/](https://ai-resume-maker-sigma.vercel.app/)
 
 ## 📡 API Documentation
 
