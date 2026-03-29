@@ -2,240 +2,187 @@
 
 import { useState } from 'react';
 
+function ScoreBar({ score, color }: { score: number; color: string }) {
+  return (
+    <div className="relative h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+      <div
+        className="h-full rounded-full transition-all duration-1000 ease-out"
+        style={{ width: `${score}%`, background: color }}
+      />
+    </div>
+  );
+}
+
+function ResultSection({ title, icon, items, tagClass = 'tag' }: { title: string; icon: string; items: string[]; tagClass?: string }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      <h4 className="text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: 'rgba(165, 180, 252, 0.8)' }}>
+        <span>{icon}</span>{title}
+      </h4>
+      <div className="flex flex-wrap gap-2">
+        {items.map((item, i) => <span key={i} className={tagClass}>{item}</span>)}
+      </div>
+    </div>
+  );
+}
+
+function ListSection({ title, icon, items }: { title: string; icon: string; items: string[] }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      <h4 className="text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: 'rgba(165, 180, 252, 0.8)' }}>
+        <span>{icon}</span>{title}
+      </h4>
+      <ul className="space-y-2">
+        {items.map((item, i) => (
+          <li key={i} className="text-sm text-slate-300 flex gap-2 leading-relaxed">
+            <span style={{ color: '#667eea', flexShrink: 0 }}>▸</span>{item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function ResumeAnalyzer() {
   const [resumeText, setResumeText] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [analysis, setAnalysis] = useState<any>(null);
   const [weaknesses, setWeaknesses] = useState<any>(null);
   const [hiringSim, setHiringSim] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
 
-  const analyzeATS = async () => {
-    setLoading(true);
+  const call = async (endpoint: string, body: object, setter: (d: any) => void) => {
+    setLoading(endpoint);
     try {
-      const res = await fetch('/api/resume/analyze', {
+      const res = await fetch(`/api/resume/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobDescription }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (data.data) {
-        setAnalysis(data.data);
-      } else {
-        alert('Error: ' + data.error);
-      }
-    } catch (error) {
-      alert('Failed to analyze resume');
+      if (data.data) setter(data.data);
+      else alert('Error: ' + data.error);
+    } catch {
+      alert('Request failed');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const detectWeaknesses = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/resume/weakness', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText }),
-      });
-      const data = await res.json();
-      if (data.data) {
-        setWeaknesses(data.data);
-      } else {
-        alert('Error: ' + data.error);
-      }
-    } catch (error) {
-      alert('Failed to detect weaknesses');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const simulateHiring = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/resume/hiring', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobDescription }),
-      });
-      const data = await res.json();
-      if (data.data) {
-        setHiringSim(data.data);
-      } else {
-        alert('Error: ' + data.error);
-      }
-    } catch (error) {
-      alert('Failed to simulate hiring');
-    } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Analyze Your Resume</h2>
-        <p className="mt-2 text-gray-600">Get ATS scores, detect weaknesses, and simulate recruiter review.</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="glass-strong p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: 'linear-gradient(135deg, #f093fb, #f5576c)' }}>◎</div>
+          <div>
+            <h2 className="text-2xl font-bold text-white">Analyze Your Resume</h2>
+            <p className="text-slate-400 mt-1">Get ATS scores, detect weaknesses, and simulate recruiter decisions.</p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
+      {/* Input */}
+      <div className="glass p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Resume Text</label>
+            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'rgba(165, 180, 252, 0.8)' }}>Resume Text</label>
             <textarea
               value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              rows={10}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              onChange={e => setResumeText(e.target.value)}
+              rows={12}
+              className="input-field resize-none"
               placeholder="Paste your resume text here..."
             />
           </div>
-        </div>
-
-        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Job Description (Optional)</label>
+            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'rgba(165, 180, 252, 0.8)' }}>
+              Job Description <span className="normal-case font-normal text-slate-500">(optional)</span>
+            </label>
             <textarea
               value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              rows={10}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              onChange={e => setJobDescription(e.target.value)}
+              rows={12}
+              className="input-field resize-none"
               placeholder="Paste the job description for tailored analysis..."
             />
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center space-x-4">
-        <button
-          onClick={analyzeATS}
-          disabled={loading}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {loading ? 'Analyzing...' : 'Analyze ATS Score'}
+      {/* Action Buttons */}
+      <div className="flex flex-wrap justify-center gap-3">
+        <button onClick={() => call('analyze', { resumeText, jobDescription }, setAnalysis)} disabled={!!loading || !resumeText} className="btn-primary flex items-center gap-2">
+          {loading === 'analyze' ? <><span className="spinner"></span>Analyzing...</> : <><span>◎</span>ATS Score</>}
         </button>
-        <button
-          onClick={detectWeaknesses}
-          disabled={loading}
-          className="bg-yellow-600 text-white px-6 py-2 rounded-md hover:bg-yellow-700 disabled:opacity-50"
-        >
-          {loading ? 'Detecting...' : 'Detect Weaknesses'}
+        <button onClick={() => call('weakness', { resumeText }, setWeaknesses)} disabled={!!loading || !resumeText} className="btn-secondary flex items-center gap-2">
+          {loading === 'weakness' ? <><span className="spinner" style={{ borderTopColor: 'white' }}></span>Detecting...</> : <><span>⚡</span>Find Weaknesses</>}
         </button>
-        <button
-          onClick={simulateHiring}
-          disabled={loading}
-          className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
-        >
-          {loading ? 'Simulating...' : 'Simulate Hiring'}
+        <button onClick={() => call('hiring', { resumeText, jobDescription }, setHiringSim)} disabled={!!loading || !resumeText} className="btn-success flex items-center gap-2">
+          {loading === 'hiring' ? <><span className="spinner" style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: '#0a0a1a' }}></span>Simulating...</> : <><span>🎯</span>Simulate Hiring</>}
         </button>
       </div>
 
+      {/* ATS Analysis Result */}
       {analysis && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">ATS Analysis</h3>
-          <div className="mb-4">
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700">ATS Score:</span>
-              <div className="ml-2 bg-gray-200 rounded-full h-4 flex-1">
-                <div
-                  className="bg-indigo-600 h-4 rounded-full"
-                  style={{ width: `${analysis.atsScore}%` }}
-                ></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">{analysis.atsScore}/100</span>
-            </div>
+        <div className="glass-strong p-6 fade-in-up result-card space-y-5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>◎</div>
+            <h3 className="text-lg font-bold text-white">ATS Analysis</h3>
           </div>
-          <div className="mb-4">
-            <h4 className="font-medium">Missing Keywords:</h4>
-            <ul className="list-disc list-inside text-sm">
-              {analysis.missingKeywords?.map((kw: string, i: number) => (
-                <li key={i}>{kw}</li>
-              ))}
-            </ul>
-          </div>
+
           <div>
-            <h4 className="font-medium">Suggestions:</h4>
-            <ul className="list-disc list-inside text-sm">
-              {analysis.suggestions?.map((s: string, i: number) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-slate-300">ATS Compatibility Score</span>
+              <span className="text-2xl font-bold gradient-text">{analysis.atsScore}<span className="text-sm text-slate-500">/100</span></span>
+            </div>
+            <ScoreBar score={analysis.atsScore} color="linear-gradient(90deg, #667eea, #764ba2)" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <ResultSection title="Missing Keywords" icon="🔍" items={analysis.missingKeywords} tagClass="tag tag-red" />
+            <ListSection title="Suggestions" icon="💡" items={analysis.suggestions} />
           </div>
         </div>
       )}
 
+      {/* Weaknesses Result */}
       {weaknesses && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Resume Weaknesses</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-medium">Weak Verbs:</h4>
-              <ul className="list-disc list-inside text-sm">
-                {weaknesses.weakVerbs?.map((v: string, i: number) => (
-                  <li key={i}>{v}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium">Missing Metrics:</h4>
-              <ul className="list-disc list-inside text-sm">
-                {weaknesses.missingMetrics?.map((m: string, i: number) => (
-                  <li key={i}>{m}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium">Generic Statements:</h4>
-              <ul className="list-disc list-inside text-sm">
-                {weaknesses.genericStatements?.map((s: string, i: number) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium">Recommendations:</h4>
-              <ul className="list-disc list-inside text-sm">
-                {weaknesses.recommendations?.map((r: string, i: number) => (
-                  <li key={i}>{r}</li>
-                ))}
-              </ul>
-            </div>
+        <div className="glass-strong p-6 fade-in-up result-card space-y-5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f093fb, #f5576c)' }}>⚡</div>
+            <h3 className="text-lg font-bold text-white">Resume Weaknesses</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <ResultSection title="Weak Verbs" icon="📝" items={weaknesses.weakVerbs} tagClass="tag tag-red" />
+            <ListSection title="Missing Metrics" icon="📊" items={weaknesses.missingMetrics} />
+            <ListSection title="Generic Statements" icon="⚠️" items={weaknesses.genericStatements} />
+            <ListSection title="Recommendations" icon="✅" items={weaknesses.recommendations} />
           </div>
         </div>
       )}
 
+      {/* Hiring Simulation Result */}
       {hiringSim && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Hiring Simulation</h3>
-          <div className="mb-4">
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-700">Shortlist Probability:</span>
-              <div className="ml-2 bg-gray-200 rounded-full h-4 flex-1">
-                <div
-                  className="bg-green-600 h-4 rounded-full"
-                  style={{ width: `${hiringSim.shortlistProbability}%` }}
-                ></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">{hiringSim.shortlistProbability}%</span>
-            </div>
+        <div className="glass-strong p-6 fade-in-up result-card space-y-5">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4facfe, #00f2fe)' }}>🎯</div>
+            <h3 className="text-lg font-bold text-white">Hiring Simulation</h3>
           </div>
-          <div className="mb-4">
-            <h4 className="font-medium">Key Strengths:</h4>
-            <ul className="list-disc list-inside text-sm">
-              {hiringSim.keyStrengths?.map((s: string, i: number) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
-          </div>
+
           <div>
-            <h4 className="font-medium">Rejection Reasons:</h4>
-            <ul className="list-disc list-inside text-sm">
-              {hiringSim.rejectionReasons?.map((r: string, i: number) => (
-                <li key={i}>{r}</li>
-              ))}
-            </ul>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-slate-300">Shortlist Probability</span>
+              <span className="text-2xl font-bold gradient-text-blue">{hiringSim.shortlistProbability}<span className="text-sm text-slate-500">%</span></span>
+            </div>
+            <ScoreBar score={hiringSim.shortlistProbability} color="linear-gradient(90deg, #4facfe, #00f2fe)" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <ListSection title="Key Strengths" icon="💪" items={hiringSim.keyStrengths} />
+            <ListSection title="Rejection Risks" icon="⚠️" items={hiringSim.rejectionReasons} />
           </div>
         </div>
       )}
