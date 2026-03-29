@@ -1,153 +1,215 @@
 # AI Resume Intelligence System
 
-A production-ready Next.js + Supabase + Gemini AI solution for advanced resume creation, ATS analysis, tailoring and hiring simulation.
+[![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR_SITE_ID/deploy-status)](https://app.netlify.com/sites/YOUR_SITE_NAME/deploys)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+A production-ready Next.js application powered by Supabase and Google Gemini AI for intelligent resume creation, ATS analysis, job tailoring, and hiring simulation.
 
-- Resume builder with AI-enhanced bullet points
-- ATS compatibility analysis (score, missing keywords, suggestions)
-- Resume tailoring by job description
-- Weakness detection (weak verbs, lack of metrics, generic statements)
-- Hiring simulation with shortlist probability & reasons
-- Supabase auth (email/password)
-- Gemini AI for all AI operations
+## ✨ Features
 
-## Tech Stack
+- **AI-Powered Resume Builder**: Generate professional resumes with AI-enhanced bullet points and content optimization
+- **ATS Compatibility Analysis**: Get detailed scores, missing keywords, and actionable suggestions for better ATS performance
+- **Smart Resume Tailoring**: Automatically customize your resume based on specific job descriptions
+- **Weakness Detection**: Identify weak verbs, lack of metrics, and generic statements in your resume
+- **Hiring Simulation**: Simulate hiring decisions with probability scores and detailed reasoning
+- **Secure Authentication**: Email/password authentication with Supabase
+- **Responsive Design**: Modern UI built with Tailwind CSS and TypeScript
 
-- Frontend: Next.js App Router, Tailwind CSS, TypeScript
-- Backend: Next.js API routes, Supabase
-- AI: Google Gemini AI (gemini-1.5-flash)
-- Database: Supabase (PostgreSQL)
+## 🛠 Tech Stack
 
-## Environment Variables
+- **Frontend**: Next.js 14 (App Router), React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Supabase (PostgreSQL)
+- **AI**: Google Gemini AI (gemini-1.5-flash)
+- **Authentication**: Supabase Auth
+- **Deployment**: Netlify
+- **Database**: Supabase (PostgreSQL with Row Level Security)
 
-Create `.env.local` with:
+## 📋 Prerequisites
 
-```env
-GEMINI_API_KEY=your_gemini_api_key
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_anon_key
-```
+- Node.js 18+ and npm
+- Google Gemini API key
+- Supabase account and project
 
-## Local Setup
+## 🚀 Installation
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables in `.env.local`
-4. Set up Supabase database (see below)
-5. Run development server: `npm run dev`
-6. Visit `http://localhost:3000`
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/ai-resume-maker.git
+   cd ai-resume-maker
+   ```
 
-## Supabase Database Setup
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-Create a new Supabase project and run the following SQL in the SQL editor:
+3. **Set up environment variables**
 
-```sql
--- Enable UUID extension
-create extension if not exists "uuid-ossp";
+   Create a `.env.local` file in the root directory:
 
--- Users table (Supabase auth handles this automatically)
--- But you can add custom fields if needed
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
--- Resumes table
-create table resumes (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade,
-  content jsonb not null,
-  created_at timestamptz default now()
-);
+## 🗄️ Database Setup
 
--- Analyses table
-create table analyses (
-  id uuid primary key default uuid_generate_v4(),
-  resume_id uuid references resumes(id) on delete cascade,
-  ats_score integer,
-  missing_keywords text[],
-  suggestions text[],
-  job_description text,
-  created_at timestamptz default now()
-);
+1. Create a new project on [Supabase](https://supabase.com)
+2. Go to the SQL Editor in your Supabase dashboard
+3. Run the following SQL to set up the database schema:
 
--- Enable RLS (Row Level Security)
-alter table resumes enable row level security;
-alter table analyses enable row level security;
+   ```sql
+   -- Enable UUID extension
+   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Policies for resumes
-create policy "Users can view their own resumes" on resumes
-  for select using (auth.uid() = user_id);
+   -- Resumes table
+   CREATE TABLE resumes (
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+     content JSONB NOT NULL,
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
 
-create policy "Users can insert their own resumes" on resumes
-  for insert with check (auth.uid() = user_id);
+   -- Analyses table
+   CREATE TABLE analyses (
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+     resume_id UUID REFERENCES resumes(id) ON DELETE CASCADE,
+     ats_score INTEGER,
+     missing_keywords TEXT[],
+     suggestions TEXT[],
+     job_description TEXT,
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
 
-create policy "Users can update their own resumes" on resumes
-  for update using (auth.uid() = user_id);
+   -- Enable Row Level Security
+   ALTER TABLE resumes ENABLE ROW LEVEL SECURITY;
+   ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
 
-create policy "Users can delete their own resumes" on resumes
-  for delete using (auth.uid() = user_id);
+   -- RLS Policies for resumes
+   CREATE POLICY "Users can view their own resumes" ON resumes
+     FOR SELECT USING (auth.uid() = user_id);
 
--- Policies for analyses
-create policy "Users can view analyses for their resumes" on analyses
-  for select using (
-    exists (
-      select 1 from resumes
-      where resumes.id = analyses.resume_id
-      and resumes.user_id = auth.uid()
-    )
-  );
+   CREATE POLICY "Users can insert their own resumes" ON resumes
+     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-create policy "Users can insert analyses for their resumes" on analyses
-  for insert with check (
-    exists (
-      select 1 from resumes
-      where resumes.id = analyses.resume_id
-      and resumes.user_id = auth.uid()
-    )
-  );
-```
+   CREATE POLICY "Users can update their own resumes" ON resumes
+     FOR UPDATE USING (auth.uid() = user_id);
 
-## API Routes
+   CREATE POLICY "Users can delete their own resumes" ON resumes
+     FOR DELETE USING (auth.uid() = user_id);
 
-- `POST /api/resume/generate` - Generate resume from profile
-- `POST /api/resume/analyze` - Analyze ATS compatibility
-- `POST /api/resume/tailor` - Tailor resume for job
-- `POST /api/resume/weakness` - Detect resume weaknesses
-- `POST /api/resume/hiring` - Simulate hiring decision
+   -- RLS Policies for analyses
+   CREATE POLICY "Users can view analyses for their resumes" ON analyses
+     FOR SELECT USING (
+       EXISTS (
+         SELECT 1 FROM resumes
+         WHERE resumes.id = analyses.resume_id
+         AND resumes.user_id = auth.uid()
+       )
+     );
 
-## Deployment
+   CREATE POLICY "Users can insert analyses for their resumes" ON analyses
+     FOR INSERT WITH CHECK (
+       EXISTS (
+         SELECT 1 FROM resumes
+         WHERE resumes.id = analyses.resume_id
+         AND resumes.user_id = auth.uid()
+       )
+     );
+   ```
 
-1. Deploy to Vercel
-2. Set environment variables in Vercel dashboard
-3. Ensure Supabase URL allows Vercel's IP ranges
+## 🏃‍♂️ Running Locally
 
-## Contributing
+1. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+2. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+3. Sign up for an account and start building your resume!
+
+## 🌐 Deployment to Netlify
+
+### Option 1: One-Click Deploy
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/your-username/ai-resume-maker)
+
+### Option 2: Manual Deployment
+
+1. **Connect your repository to Netlify**
+   - Go to [Netlify](https://netlify.com) and sign in
+   - Click "New site from Git"
+   - Connect your Git repository
+
+2. **Configure build settings**
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+   - These are automatically configured via `netlify.toml`
+
+3. **Set environment variables**
+   In your Netlify dashboard, go to Site settings > Environment variables and add:
+   - `GEMINI_API_KEY`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+4. **Deploy**
+   - Click "Deploy site"
+   - Netlify will automatically build and deploy your application
+
+### Important Notes for Netlify Deployment
+
+- API routes are automatically converted to Netlify Functions
+- Static assets are served from the `.next` directory
+- Environment variables are securely managed in Netlify's dashboard
+- Update the Netlify badge in this README with your actual site ID
+
+## 📡 API Documentation
+
+The application provides the following API endpoints:
+
+- `POST /api/resume/generate` - Generate a resume from user profile data
+- `POST /api/resume/analyze` - Analyze resume for ATS compatibility
+- `POST /api/resume/tailor` - Tailor resume content for a specific job description
+- `POST /api/resume/weakness` - Detect weaknesses in resume content
+- `POST /api/resume/hiring` - Simulate hiring decision process
+
+All endpoints require authentication and return JSON responses.
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
 
 1. Fork the repository
-2. Create a feature branch
-3. Make changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Commit your changes: `git commit -m 'Add amazing feature'`
+5. Push to the branch: `git push origin feature/amazing-feature`
+6. Open a Pull Request
 
-## License
+### Development Guidelines
 
-MIT
-  id uuid primary key default uuid_generate_v4(),
-  resume_id uuid references resumes(id),
-  ats_score int,
-  suggestions jsonb,
-  job_description text,
-  created_at timestamptz default now()
-);
-```
+- Use TypeScript for all new code
+- Follow the existing code style and patterns
+- Write meaningful commit messages
+- Test your changes locally before submitting
+- Update documentation as needed
 
-## API routes
+## 📄 License
 
-- `/api/resume/generate`
-- `/api/resume/analyze`
-- `/api/resume/tailor`
-- `/api/resume/weakness`
-- `/api/resume/hiring`
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Notes
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) for the amazing React framework
+- [Supabase](https://supabase.com/) for the backend-as-a-service platform
+- [Google Gemini AI](https://ai.google.dev/) for the AI capabilities
+- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+
+## 📞 Support
+
+If you have any questions or need help, please open an issue on GitHub or contact the maintainers.
 
 - AI calls are server-side only (OpenAI key is secure)
 - Keep prompt engineering structured as described in design doc
