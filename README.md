@@ -19,7 +19,7 @@ A production-ready Next.js application powered by Supabase and Google Gemini AI 
 
 - **Frontend**: Next.js 14 (App Router), React, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes, Supabase (PostgreSQL)
-- **AI**: Google Gemini AI (gemini-1.5-flash)
+- **AI**: Google Gemini AI (gemini-2.0-flash) - Latest model with optimized performance
 - **Authentication**: Supabase Auth
 - **Deployment**: Netlify
 - **Database**: Supabase (PostgreSQL with Row Level Security)
